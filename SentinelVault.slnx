@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SentinelVault.Api/SentinelVault.Api.csproj" />
+  <Project Path="SentinelVault.Application/SentinelVault.Application.csproj" />
+  <Project Path="SentinelVault.Domain/SentinelVault.Domain.csproj" />
+  <Project Path="SentinelVault.Infrastructure/SentinelVault.Infrastructure.csproj" />
+</Solution>
