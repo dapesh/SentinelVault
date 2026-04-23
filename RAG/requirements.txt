@@ -1,0 +1,8 @@
+openai
+docling
+pydantic
+qdrant-client
+neo4j
+python-dotenv
+fastapi
+uvicorn
