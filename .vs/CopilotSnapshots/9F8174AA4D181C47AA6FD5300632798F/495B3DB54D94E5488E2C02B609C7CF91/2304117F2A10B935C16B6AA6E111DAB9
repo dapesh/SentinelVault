@@ -1,0 +1,23 @@
+﻿using SentinelVault.Domain.Entities;
+using SentinelVault.Domain.Enums;
+
+namespace SentinelVault.Application.Interfaces
+{
+    public interface IDocumentRepository
+    {
+        /// <summary>
+        /// Saves document metadata to the database.
+        /// </summary>
+        Task<Guid> SaveMetadataAsync(Document document);
+
+        /// <summary>
+        /// Retrieves a document by its ID.
+        /// </summary>
+        Task<Document?> GetByIdAsync(Guid id);
+
+        /// <summary>
+        /// Updates the status of a document.
+        /// </summary>
+        Task UpdateStatusAsync(Guid id, DocumentStatus status);
+    }
+}
