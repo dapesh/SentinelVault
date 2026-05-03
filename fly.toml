@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for sentinelvault-snlx-q on 2026-05-03T11:08:47Z
+# fly.toml app configuration file generated for sentinelvault-x-whwq on 2026-05-03T13:32:33Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'sentinelvault-snlx-q'
+app = 'sentinelvault-x-whwq'
 primary_region = 'syd'
 
 [build]
