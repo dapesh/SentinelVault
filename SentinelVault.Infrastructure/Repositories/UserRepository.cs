@@ -12,7 +12,7 @@ namespace SentinelVault.Infrastructure.Repositories
         public async Task<User?> GetByEmailAsync(string email)
         {
             using var connection = connectionFactory.CreateConnection();
-            const string sql = "SELECT Id, Email, PasswordHash, FirstName, LastName, CreatedAt, LastLogin, IsActive FROM Users WHERE Email = @Email AND IsActive = 1";
+            const string sql = "SELECT Id, Email, PasswordHash, FirstName, LastName, CreatedAt, LastLogin, IsActive FROM Users WHERE Email = @Email AND IsActive = true";
             return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
         }
 
@@ -20,7 +20,7 @@ namespace SentinelVault.Infrastructure.Repositories
         public async Task<User?> GetByIdAsync(Guid id)
         {
             using var connection = connectionFactory.CreateConnection();
-            const string sql = "SELECT Id, Email, PasswordHash, FirstName, LastName, CreatedAt, LastLogin, IsActive FROM Users WHERE Id = @Id AND IsActive = 1";
+            const string sql = "SELECT Id, Email, PasswordHash, FirstName, LastName, CreatedAt, LastLogin, IsActive FROM Users WHERE Id = @Id AND IsActive = true";
             return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Id = id });
         }
 
@@ -38,7 +38,7 @@ namespace SentinelVault.Infrastructure.Repositories
         {
             using var connection = connectionFactory.CreateConnection();
             const string sql = "SELECT COUNT(1) FROM Users WHERE Email = @Email";
-            return await connection.ExecuteScalarAsync<int>(sql, new { Email = email }) > 0;
+            return await connection.ExecuteScalarAsync<long>(sql, new { Email = email }) > 0;
         }
     }
 }

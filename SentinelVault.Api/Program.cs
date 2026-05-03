@@ -3,6 +3,9 @@ using Microsoft.IdentityModel.Tokens;
 using SentinelVault.Infrastructure;
 using System.Text;
 
+// Enable legacy timestamp behavior for PostgreSQL so Npgsql doesn't crash when saving standard UTC DateTimes to Timestamp columns
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure JWT Authentication
