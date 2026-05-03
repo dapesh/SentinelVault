@@ -1,26 +1,20 @@
-# Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy only project files first to cache layers and restore dependencies
+# Copy all project files to restore dependencies
 COPY ["SentinelVault.Api/SentinelVault.Api.csproj", "SentinelVault.Api/"]
 COPY ["SentinelVault.Application/SentinelVault.Application.csproj", "SentinelVault.Application/"]
-# Add Domain or Infrastructure if they exist in your solution
-# COPY ["SentinelVault.Domain/SentinelVault.Domain.csproj", "SentinelVault.Domain/"]
+COPY ["SentinelVault.Domain/SentinelVault.Domain.csproj", "SentinelVault.Domain/"]
+COPY ["SentinelVault.Infrastructure/SentinelVault.Infrastructure.csproj", "SentinelVault.Infrastructure/"]
 
 RUN dotnet restore "SentinelVault.Api/SentinelVault.Api.csproj"
 
-# Copy the rest of the source code
+# Copy everything else and build
 COPY . .
 WORKDIR "/src/SentinelVault.Api"
+RUN dotnet publish "SentinelVault.Api.csproj" -c Release -o /app/publish
 
-# Build and publish the API project
-RUN dotnet publish "SentinelVault.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-# Stage 2: Final Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-
-# Set the entry point to your DLL
 ENTRYPOINT ["dotnet", "SentinelVault.Api.dll"]
