@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for sentinel-vault-api on 2026-05-03T20:27:17+09:30
+# fly.toml app configuration file generated for sentinelvault-snlx-q on 2026-05-03T11:08:47Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'sentinel-vault-api'
+app = 'sentinelvault-snlx-q'
 primary_region = 'syd'
 
 [build]
@@ -19,5 +19,6 @@ primary_region = 'syd'
 
 [[vm]]
   memory = '1gb'
+  cpu_kind = 'shared'
   cpus = 1
   memory_mb = 1024
