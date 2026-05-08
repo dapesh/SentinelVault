@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using SentinelVault.Application.Interfaces;
 using SentinelVault.Infrastructure.Persistence;
 using SentinelVault.Infrastructure.Repositories;
@@ -20,13 +21,9 @@ namespace SentinelVault.Infrastructure
             services.AddScoped<IDocumentRepository, DocumentReposiotry>();
             services.AddScoped<IDocumentService, DocumentService>();
 
-            // Redis cache
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = configuration.GetConnectionString("Redis") ?? "localhost:6379";
-                options.InstanceName = "SentinelVault_";
-            });
-            services.AddScoped<ICacheService, RedisCacheService>();
+            // Use Memory Cache instead of Redis for simpler hosting (no external Redis needed)
+            services.AddDistributedMemoryCache();
+            services.AddScoped<ICacheService, DistributedCacheService>();
 
             // Python AI Client with HttpClient
             services.AddHttpClient<IPythonAiClient, PythonAiClient>(client =>
