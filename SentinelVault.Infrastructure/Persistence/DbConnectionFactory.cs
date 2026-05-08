@@ -12,26 +12,25 @@ namespace SentinelVault.Infrastructure.Persistence
                 ?? configuration["DATABASE_URL"] // Support Render/Fly.io default env var
                 ?? throw new InvalidOperationException("Connection string not found.");
 
-            // Normalize connection string to handle both URI and ADO.NET formats
+            // 1. Scrub the connection string to remove any 'sslmode' parameters that crash Npgsql
+            var scrubbedString = System.Text.RegularExpressions.Regex.Replace(
+                connectionString, @"sslmode\s*=[^;&]*[;&]?", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).TrimEnd(';', '&', ' ');
+
+            // 2. Initialize the builder
             var builder = new NpgsqlConnectionStringBuilder();
             
-            if (connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+            if (scrubbedString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
             {
-                // Parse URI format
-                builder = new NpgsqlConnectionStringBuilder(connectionString);
+                builder = new NpgsqlConnectionStringBuilder(scrubbedString);
             }
             else
             {
-                // Handle standard ADO.NET format
-                // Aggressively replace 'sslmode' with 'SslMode' regardless of spaces to satisfy Npgsql
-                var normalizedString = connectionString;
-                if (normalizedString.Contains("sslmode", StringComparison.OrdinalIgnoreCase))
-                {
-                    normalizedString = System.Text.RegularExpressions.Regex.Replace(
-                        normalizedString, @"sslmode\s*=", "SslMode=", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                }
-                builder = new NpgsqlConnectionStringBuilder(normalizedString);
+                builder = new NpgsqlConnectionStringBuilder(scrubbedString);
             }
+
+            // 3. Force SslMode to Require (standard for Neon/Render)
+            builder.SslMode = SslMode.Require;
+            builder.TrustServerCertificate = true;
 
             return new NpgsqlConnection(builder.ConnectionString);
         }
