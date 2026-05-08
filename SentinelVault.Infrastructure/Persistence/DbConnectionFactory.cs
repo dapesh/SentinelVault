@@ -6,14 +6,6 @@ namespace SentinelVault.Infrastructure.Persistence
 {
     public class DbConnectionFactory(IConfiguration configuration)
     {
-using Npgsql;
-using Microsoft.Extensions.Configuration;
-using System.Data;
-
-namespace SentinelVault.Infrastructure.Persistence
-{
-    public class DbConnectionFactory(IConfiguration configuration)
-    {
         public IDbConnection CreateConnection()
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection")
