@@ -51,7 +51,7 @@ namespace SentinelVault.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error processing chat query");
-                return StatusCode(StatusCodes.Status500InternalServerError, CreateErrorResponse(StatusCodes.Status500InternalServerError, "Internal server error", "An unexpected error occurred"));
+                return StatusCode(StatusCodes.Status500InternalServerError, CreateErrorResponse(StatusCodes.Status500InternalServerError, "Internal server error", $"Error: {ex.Message}"));
             }
         }
 

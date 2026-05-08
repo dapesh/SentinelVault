@@ -1,6 +1,7 @@
 using SentinelVault.Application.Interfaces;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace SentinelVault.Infrastructure.Services
 {
