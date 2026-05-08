@@ -22,8 +22,14 @@ namespace SentinelVault.Infrastructure.Persistence
             }
             else
             {
-                // Handle standard ADO.NET format, but replace lowercase 'sslmode' which Npgsql dislikes
-                var normalizedString = connectionString.Replace("sslmode=", "SslMode=", StringComparison.OrdinalIgnoreCase);
+                // Handle standard ADO.NET format
+                // Aggressively replace 'sslmode' with 'SslMode' regardless of spaces to satisfy Npgsql
+                var normalizedString = connectionString;
+                if (normalizedString.Contains("sslmode", StringComparison.OrdinalIgnoreCase))
+                {
+                    normalizedString = System.Text.RegularExpressions.Regex.Replace(
+                        normalizedString, @"sslmode\s*=", "SslMode=", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                }
                 builder = new NpgsqlConnectionStringBuilder(normalizedString);
             }
 
