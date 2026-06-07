@@ -7,7 +7,8 @@ using SentinelVault.Domain.Enums;
 namespace SentinelVault.Infrastructure.Services
 {
     /// <summary>Service for handling file uploads and document management.</summary>
-    public class DocumentService(IDocumentRepository repository, IConfiguration configuration) : IDocumentService
+    /// <summary>Service for handling file uploads and document management.</summary>
+    public class DocumentService(IDocumentRepository repository, IConfiguration configuration, IPythonAiClient aiClient) : IDocumentService
     {
         private readonly string _uploadPath = configuration["Storage:UploadPath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "LocalVault");
         private const long MaxFileSizeBytes = 52_428_800; // 50 MB
@@ -47,7 +48,16 @@ namespace SentinelVault.Infrastructure.Services
 
             try
             {
-                return await repository.SaveMetadataAsync(document);
+                var documentId = await repository.SaveMetadataAsync(document);
+
+                // Forward to Python AI service asynchronously
+                _ = Task.Run(async () =>
+                {
+                    file.FileStream.Position = 0; // Reset stream position before sending
+                    await aiClient.UploadDocumentAsync(documentId, file.FileName, file.FileStream);
+                });
+
+                return documentId;
             }
             catch
             {

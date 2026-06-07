@@ -1,4 +1,4 @@
-﻿using SentinelVault.Domain.Entities;
+using SentinelVault.Domain.Entities;
 using SentinelVault.Domain.Enums;
 
 namespace SentinelVault.Application.Interfaces
@@ -27,5 +27,10 @@ namespace SentinelVault.Application.Interfaces
         /// Updates the status of a document.
         /// </summary>
         Task UpdateStatusAsync(Guid id, DocumentStatus status);
+
+        /// <summary>
+        /// Updates the external document ID returned from the RAG service.
+        /// </summary>
+        Task UpdateExternalDocumentIdAsync(Guid id, Guid externalDocumentId);
     }
 }

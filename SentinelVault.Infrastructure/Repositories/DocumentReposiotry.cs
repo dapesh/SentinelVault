@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using SentinelVault.Application.Interfaces;
 using SentinelVault.Domain.Entities;
 using SentinelVault.Domain.Enums;
@@ -9,17 +9,46 @@ namespace SentinelVault.Infrastructure.Repositories
     /// <summary>
     /// Repository implementation for document persistence using Dapper.
     /// </summary>
-    public class DocumentReposiotry(DbConnectionFactory connectionFactory) : IDocumentRepository
+    public class DocumentReposiotry : IDocumentRepository
     {
+        private readonly DbConnectionFactory _connectionFactory;
+        private static bool _schemaChecked = false;
+        private static readonly object _schemaLock = new();
+
+        public DocumentReposiotry(DbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+            EnsureExternalDocumentIdColumnExists();
+        }
+
+        private void EnsureExternalDocumentIdColumnExists()
+        {
+            if (_schemaChecked) return;
+            lock (_schemaLock)
+            {
+                if (_schemaChecked) return;
+                try
+                {
+                    using var connection = _connectionFactory.CreateConnection();
+                    connection.Execute("ALTER TABLE Documents ADD COLUMN IF NOT EXISTS ExternalDocumentId UUID;");
+                    _schemaChecked = true;
+                }
+                catch
+                {
+                    // Ignore schema checking errors to prevent application startup blockage
+                }
+            }
+        }
+
         /// <summary>
         /// Saves document metadata to the database.
         /// </summary>
         public async Task<Guid> SaveMetadataAsync(Document document)
         {
-            using var connection = connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
             const string sql = @"
-            INSERT INTO Documents (Id, FileName, FilePath, UploadedAt, Status, UserId)
-            VALUES (@Id, @FileName, @FilePath, @UploadedAt, @Status, @UserId)";
+            INSERT INTO Documents (Id, FileName, FilePath, UploadedAt, Status, UserId, ExternalDocumentId)
+            VALUES (@Id, @FileName, @FilePath, @UploadedAt, @Status, @UserId, @ExternalDocumentId)";
 
             await connection.ExecuteAsync(sql, new
             {
@@ -28,7 +57,8 @@ namespace SentinelVault.Infrastructure.Repositories
                 document.FilePath,
                 document.UploadedAt,
                 Status = (int)document.Status,
-                document.UserId
+                document.UserId,
+                document.ExternalDocumentId
             });
 
             return document.Id;
@@ -39,9 +69,9 @@ namespace SentinelVault.Infrastructure.Repositories
         /// </summary>
         public async Task<Document?> GetByIdAsync(Guid id)
         {
-            using var connection = connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
             const string sql = @"
-            SELECT Id, FileName, FilePath, UploadedAt, Status, UserId
+            SELECT Id, FileName, FilePath, UploadedAt, Status, UserId, ExternalDocumentId
             FROM Documents
             WHERE Id = @Id";
 
@@ -54,9 +84,9 @@ namespace SentinelVault.Infrastructure.Repositories
         /// </summary>
         public async Task<IEnumerable<Document>> GetByUserIdAsync(Guid userId)
         {
-            using var connection = connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
             const string sql = @"
-            SELECT Id, FileName, FilePath, UploadedAt, Status, UserId
+            SELECT Id, FileName, FilePath, UploadedAt, Status, UserId, ExternalDocumentId
             FROM Documents
             WHERE UserId = @UserId
             ORDER BY UploadedAt DESC";
@@ -70,13 +100,27 @@ namespace SentinelVault.Infrastructure.Repositories
         /// </summary>
         public async Task UpdateStatusAsync(Guid id, DocumentStatus status)
         {
-            using var connection = connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
             const string sql = @"
             UPDATE Documents
             SET Status = @Status
             WHERE Id = @Id";
 
             await connection.ExecuteAsync(sql, new { Status = (int)status, Id = id });
+        }
+
+        /// <summary>
+        /// Updates the external document ID returned from the RAG service.
+        /// </summary>
+        public async Task UpdateExternalDocumentIdAsync(Guid id, Guid externalDocumentId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            const string sql = @"
+            UPDATE Documents
+            SET ExternalDocumentId = @ExternalDocumentId
+            WHERE Id = @Id";
+
+            await connection.ExecuteAsync(sql, new { ExternalDocumentId = externalDocumentId, Id = id });
         }
 
         /// <summary>
@@ -93,7 +137,8 @@ namespace SentinelVault.Infrastructure.Repositories
                 UploadedAt = (DateTime)result.UploadedAt,
                 Status = (DocumentStatus)(int)result.Status,
                 UserId = (Guid)result.UserId,
-                CreatedDate = (DateTime)result.CreatedDate
+                CreatedDate = (DateTime)result.CreatedDate,
+                ExternalDocumentId = result.ExternalDocumentId != null ? (Guid)result.ExternalDocumentId : null
             };
         }
     }

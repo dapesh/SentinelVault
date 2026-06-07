@@ -30,7 +30,8 @@ namespace SentinelVault.Infrastructure
             {
                 var pythonBaseUrl = configuration["PythonAI:BaseUrl"] ?? "http://localhost:8000";
                 client.BaseAddress = new Uri(pythonBaseUrl);
-                client.Timeout = TimeSpan.FromSeconds(int.Parse(configuration["PythonAI:TimeoutSeconds"] ?? "30"));
+                var timeoutSeconds = int.Parse(configuration["PythonAI:TimeoutSeconds"] ?? "300");
+                client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
             });
 
             // Authentication services

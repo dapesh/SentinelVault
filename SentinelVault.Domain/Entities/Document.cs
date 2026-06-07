@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using SentinelVault.Domain.Enums;
 
 namespace SentinelVault.Domain.Entities
@@ -12,5 +12,6 @@ namespace SentinelVault.Domain.Entities
         public DateTime CreatedDate { get; set; }
         public DateTime UploadedAt { get; set; }
         public DocumentStatus Status { get; set; } = DocumentStatus.Pending;
+        public Guid? ExternalDocumentId { get; set; }
     }
 }
