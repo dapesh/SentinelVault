@@ -287,11 +287,12 @@ class DatabaseService:
         logger.info(f"Executing Qdrant vector search for: '{query_text}'")
         query_vector = await self._generate_embeddings(query_text)
         try:
-            results = await self.qdrant_client.search(
+            response = await self.qdrant_client.query_points(
                 collection_name=COLLECTION_NAME,
-                query_vector=query_vector,
+                query=query_vector,
                 limit=limit,
             )
+            results = response.points
             filtered_results = []
             for r in results:
                 content = r.payload.get("text")
